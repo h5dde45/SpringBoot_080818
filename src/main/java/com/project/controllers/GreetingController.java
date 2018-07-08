@@ -1,12 +1,18 @@
 package com.project.controllers;
 
+import com.project.domain.Message;
+import com.project.repos.MessageRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class GreetingController {
+    @Autowired
+    private MessageRepository messageRepository;
 
     @GetMapping("/greeting")
     public String greeting(
@@ -16,9 +22,34 @@ public class GreetingController {
         return "greeting";
     }
 
-    @GetMapping("/")
+    @GetMapping
     public String main(Model model) {
-        model.addAttribute("name", "1111");
+        Iterable<Message> messages = messageRepository.findAll();
+        model.addAttribute("messages", messages);
+        return "main";
+    }
+
+    @PostMapping
+    public String add(@RequestParam String text,
+                      @RequestParam String tag,
+                      Model model) {
+        Message message = new Message(text, tag);
+        messageRepository.save(message);
+        Iterable<Message> messages = messageRepository.findAll();
+        model.addAttribute("messages", messages);
+        return "main";
+    }
+
+    @PostMapping("/filter")
+    public String filter(@RequestParam String filter,
+                         Model model) {
+
+        if (filter != null && !filter.isEmpty()) {
+            model.addAttribute("messages", messageRepository.findByTag(filter));
+        } else {
+            model.addAttribute("messages", messageRepository.findAll());
+        }
+
         return "main";
     }
 }
