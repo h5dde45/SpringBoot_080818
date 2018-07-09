@@ -1,10 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<p>hi ${name}</p>
-</body>
-</html>
+<#import "parts/common.ftl" as c>
+
+<@c.page>
+<p>hi user</p>
+<a href="/main">main page</a>
+</@c.page>

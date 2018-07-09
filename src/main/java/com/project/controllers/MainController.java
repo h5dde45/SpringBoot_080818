@@ -1,8 +1,10 @@
 package com.project.controllers;
 
 import com.project.domain.Message;
+import com.project.domain.User;
 import com.project.repos.MessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,30 +12,32 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
-public class GreetingController {
+public class MainController {
     @Autowired
     private MessageRepository messageRepository;
 
-    @GetMapping("/greeting")
-    public String greeting(
-            @RequestParam(name = "name", required = false, defaultValue = "asd") String name,
-            Model model) {
-        model.addAttribute("name", name);
+    @GetMapping("/")
+    public String greeting() {
         return "greeting";
     }
 
-    @GetMapping
-    public String main(Model model) {
-        Iterable<Message> messages = messageRepository.findAll();
-        model.addAttribute("messages", messages);
+    @GetMapping("/main")
+    public String main(@RequestParam(required = false, defaultValue = "") String filter, Model model) {
+        if (filter != null && !filter.isEmpty()) {
+            model.addAttribute("messages", messageRepository.findByTag(filter));
+        } else {
+            model.addAttribute("messages", messageRepository.findAll());
+        }
+        model.addAttribute("filter", filter);
         return "main";
     }
 
-    @PostMapping
-    public String add(@RequestParam String text,
+    @PostMapping("/main")
+    public String add(@AuthenticationPrincipal User user,
+                      @RequestParam String text,
                       @RequestParam String tag,
                       Model model) {
-        Message message = new Message(text, tag);
+        Message message = new Message(text, tag, user);
         messageRepository.save(message);
         Iterable<Message> messages = messageRepository.findAll();
         model.addAttribute("messages", messages);
@@ -44,11 +48,6 @@ public class GreetingController {
     public String filter(@RequestParam String filter,
                          Model model) {
 
-        if (filter != null && !filter.isEmpty()) {
-            model.addAttribute("messages", messageRepository.findByTag(filter));
-        } else {
-            model.addAttribute("messages", messageRepository.findAll());
-        }
 
         return "main";
     }
