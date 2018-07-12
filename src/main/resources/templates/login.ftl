@@ -2,5 +2,6 @@
 <#import "parts/login.ftl" as l>
 
 <@c.page>
+<p> ${message?if_exists}</p>
 <@l.login "/login" false/>
 </@c.page>
